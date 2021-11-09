@@ -7,3 +7,9 @@ export {
   LoggerModuleAsyncParams,
   PARAMS_PROVIDER_TOKEN,
 } from './params';
+export {
+  Store,
+  getStorageObj,
+  LOGGER_STORAGE,
+  setStorageValues,
+} from './storage';

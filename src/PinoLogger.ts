@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { Injectable, Inject, Scope } from '@nestjs/common';
 import * as pino from 'pino';
-import { Params, isPassedLogger, PARAMS_PROVIDER_TOKEN } from './params';
-import { storage } from './storage';
+import { Params, PARAMS_PROVIDER_TOKEN } from './params';
+import { LOGGER_STORAGE } from './storage';
+import { getStorageObj, setStorageValues } from '.';
 
 type PinoMethods = Pick<
   pino.BaseLogger,
@@ -26,46 +27,21 @@ type LoggerFn =
   | ((msg: string, ...args: any[]) => void)
   | ((obj: object, msg?: string, ...args: any[]) => void);
 
-let outOfContext: pino.Logger | undefined;
-
 export function __resetOutOfContextForTests() {
-  outOfContext = undefined;
   // @ts-ignore reset root for tests only
   PinoLogger.root = undefined;
 }
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class PinoLogger implements PinoMethods {
-  /**
-   * root is the most root logger that can be used to change params at runtime.
-   * Accessible only when `useExisting` is not set to `true` in `Params`.
-   * Readonly, but you can change it's properties.
-   */
-  static readonly root: pino.Logger;
+  private logger: pino.Logger;
 
   private context = '';
   private readonly contextName: string;
 
-  constructor(
-    @Inject(PARAMS_PROVIDER_TOKEN) { pinoHttp, renameContext }: Params,
-  ) {
-    if (!outOfContext) {
-      if (Array.isArray(pinoHttp)) {
-        outOfContext = pino(...pinoHttp);
-      } else if (isPassedLogger(pinoHttp)) {
-        outOfContext = pinoHttp.logger;
-      } else if (
-        typeof pinoHttp === 'object' &&
-        'stream' in pinoHttp &&
-        typeof pinoHttp.stream !== 'undefined'
-      ) {
-        outOfContext = pino(pinoHttp, pinoHttp.stream);
-      } else {
-        outOfContext = pino(pinoHttp);
-      }
-    }
-
+  constructor(@Inject(PARAMS_PROVIDER_TOKEN) { pino, renameContext }: Params) {
     this.contextName = renameContext || 'context';
+    this.logger = pino;
   }
 
   trace(msg: string, ...args: any[]): void;
@@ -109,45 +85,37 @@ export class PinoLogger implements PinoMethods {
   }
 
   private call(method: pino.Level, ...args: Parameters<LoggerFn>) {
+    const context = getStorageObj();
     if (this.context) {
       if (isFirstArgObject(args)) {
         const firstArg = args[0];
         if (firstArg instanceof Error) {
           args = [
             Object.assign(
-              { [this.contextName]: this.context },
+              { [this.contextName]: this.context, ...context },
               { err: firstArg },
             ),
             ...args.slice(1),
           ];
         } else {
           args = [
-            Object.assign({ [this.contextName]: this.context }, firstArg),
+            Object.assign(
+              { [this.contextName]: this.context, ...context },
+              firstArg,
+            ),
             ...args.slice(1),
           ];
         }
       } else {
-        args = [{ [this.contextName]: this.context }, ...args];
+        args = [{ [this.contextName]: this.context, ...context }, ...args];
       }
     }
     // @ts-ignore args are union of tuple types
     this.logger[method](...args);
   }
 
-  public get logger(): pino.Logger {
-    // outOfContext is always set in runtime before starts using
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return storage.getStore()?.logger || outOfContext!;
-  }
-
-  public assign(fields: pino.Bindings) {
-    const store = storage.getStore();
-    if (!store) {
-      throw new Error(
-        `${PinoLogger.name}: unable to assign extra fields out of request scope`,
-      );
-    }
-    store.logger = store.logger.child(fields);
+  public assign(fields: Record<string, any>) {
+    setStorageValues(fields);
   }
 }
 
