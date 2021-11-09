@@ -16,5 +16,4 @@ export interface LoggerModuleAsyncParams extends Pick<ModuleMetadata, 'imports' 
     useFactory: (...args: any[]) => Params | Promise<Params>;
     inject?: any[];
 }
-export declare function isPassedLogger(pinoHttpProp: any): pinoHttpProp is PassedLogger;
 export declare const PARAMS_PROVIDER_TOKEN = "pino-params";
