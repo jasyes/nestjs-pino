@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setStorageValues = exports.getStorageObj = exports.LOGGER_STORAGE = void 0;
+exports.PinoFastifyHook = exports.setStorageValues = exports.getStorageObj = exports.LOGGER_STORAGE = void 0;
 const async_hooks_1 = require("async_hooks");
 exports.LOGGER_STORAGE = new async_hooks_1.AsyncLocalStorage();
 const getStorageObj = () => {
@@ -25,4 +25,12 @@ const setStorageValues = (values) => {
     }
 };
 exports.setStorageValues = setStorageValues;
+const PinoFastifyHook = (req, res, done) => {
+    exports.LOGGER_STORAGE.run(new Map(), () => {
+        const asyncResource = new async_hooks_1.AsyncResource('pinoContext');
+        req['pinoContext'] = asyncResource;
+        asyncResource.runInAsyncScope(done, req.raw);
+    });
+};
+exports.PinoFastifyHook = PinoFastifyHook;
 //# sourceMappingURL=storage.js.map

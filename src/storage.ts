@@ -1,4 +1,5 @@
-import { AsyncLocalStorage } from 'async_hooks';
+import { AsyncLocalStorage, AsyncResource } from 'async_hooks';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
 export type Store = Map<string, string | number | any>;
 
@@ -24,4 +25,16 @@ export const setStorageValues = (values: Record<string, any>) => {
   for (const key of Object.keys(values)) {
     store.set(key, values[key]);
   }
+};
+
+export const PinoFastifyHook = (
+  req: FastifyRequest,
+  res: FastifyReply,
+  done: () => void,
+) => {
+  LOGGER_STORAGE.run(new Map(), () => {
+    const asyncResource = new AsyncResource('pinoContext');
+    (req as any)['pinoContext'] = asyncResource;
+    asyncResource.runInAsyncScope(done, req.raw);
+  });
 };

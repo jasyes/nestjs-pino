@@ -12,4 +12,5 @@ export {
   getStorageObj,
   LOGGER_STORAGE,
   setStorageValues,
+  PinoFastifyHook,
 } from './storage';

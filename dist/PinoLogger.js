@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PinoLogger = exports.__resetOutOfContextForTests = void 0;
 /* eslint-disable @typescript-eslint/ban-types */
+const process_1 = require("process");
 const common_1 = require("@nestjs/common");
 const params_1 = require("./params");
 const _1 = require(".");
@@ -71,11 +72,20 @@ let PinoLogger = class PinoLogger {
                 args = [{ [this.contextName]: this.context, ...context }, ...args];
             }
         }
+        else if (context) {
+            args = [context, ...args];
+        }
         // @ts-ignore args are union of tuple types
         this.logger[method](...args);
     }
     assign(fields) {
         (0, _1.setStorageValues)(fields);
+    }
+    startTime() {
+        return process_1.hrtime.bigint();
+    }
+    endTimeInMs(startTime) {
+        return Number(process_1.hrtime.bigint() - startTime) / 1000000;
     }
 };
 PinoLogger = __decorate([

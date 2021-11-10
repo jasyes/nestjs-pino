@@ -22,5 +22,7 @@ export declare class PinoLogger implements PinoMethods {
     setContext(value: string): void;
     private call;
     assign(fields: Record<string, any>): void;
+    startTime(): bigint;
+    endTimeInMs(startTime: bigint): number;
 }
 export {};

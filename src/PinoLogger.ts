@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
+import { hrtime } from 'process';
 import { Injectable, Inject, Scope } from '@nestjs/common';
 import * as pino from 'pino';
 import { Params, PARAMS_PROVIDER_TOKEN } from './params';
@@ -109,6 +110,8 @@ export class PinoLogger implements PinoMethods {
       } else {
         args = [{ [this.contextName]: this.context, ...context }, ...args];
       }
+    } else if (context) {
+      args = [context, ...args];
     }
     // @ts-ignore args are union of tuple types
     this.logger[method](...args);
@@ -116,6 +119,14 @@ export class PinoLogger implements PinoMethods {
 
   public assign(fields: Record<string, any>) {
     setStorageValues(fields);
+  }
+
+  public startTime(): bigint {
+    return hrtime.bigint();
+  }
+
+  public endTimeInMs(startTime: bigint): number {
+    return Number(hrtime.bigint() - startTime) / 1000000;
   }
 }
 

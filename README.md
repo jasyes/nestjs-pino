@@ -1,8 +1,6 @@
-<p align="center">
-  <img alt="NestJS-Pino logo" src="https://raw.githubusercontent.com/iamolegga/nestjs-pino/master/logo.png"/>
-</p>
+<h1 align="center">NestJS-Pino-Fastify</h1>
 
-<h1 align="center">NestJS-Pino</h1>
+
 
 <p align="center">
   <a href="https://www.npmjs.com/package/nestjs-pino">
@@ -20,8 +18,6 @@
   <img alt="Supported platforms: Express & Fastify" src="https://img.shields.io/badge/platforms-Express%20%26%20Fastify-green" />
 </p>
 
-<p align="center">✨✨✨ Platform agnostic logger for NestJS based on Pino with <b>REQUEST CONTEXT IN EVERY LOG</b> ✨✨✨</p>
-
 ---
 
 <p align="center"><b>This is documentation for v2 which works with NestJS 8+.<br/>Please see documentation for the previous major version which works with NestJS < 8 <a href="https://github.com/iamolegga/nestjs-pino/tree/v1.2.0#readme">here</a>.</b></p>
@@ -31,7 +27,7 @@
 ## Install
 
 ```sh
-npm i nestjs-pino pino-http
+npm i nestjs-pino-fastify
 ```
 
 ## Example
